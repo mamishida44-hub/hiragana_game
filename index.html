@@ -30,17 +30,17 @@
 
     #cards {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 15px;
-      max-width: 600px;
+      max-width: 400px;
       margin: 20px auto;
     }
 
     .card {
       background: white;
       border-radius: 12px;
-      font-size: 40px;
-      padding: 20px;
+      font-size: 42px;
+      padding: 25px;
       cursor: pointer;
       user-select: none;
       transition: 0.2s;
@@ -85,12 +85,32 @@
   <div id="score">スコア：0</div>
 
   <script>
+    // ひらがな と ローマ字音声の対応
     const hiraganaList = [
-      "く","へ","る","ろ","も","よ","け","ら","ち","ひ","そ","ま",
-      "き","さ","し","た","い","り","う","え","か"
+      { char: "く", sound: "ku" },
+      { char: "へ", sound: "he" },
+      { char: "る", sound: "ru" },
+      { char: "ろ", sound: "ro" },
+      { char: "も", sound: "mo" },
+      { char: "よ", sound: "yo" },
+      { char: "け", sound: "ke" },
+      { char: "ら", sound: "ra" },
+      { char: "ち", sound: "chi" },
+      { char: "ひ", sound: "hi" },
+      { char: "そ", sound: "so" },
+      { char: "ま", sound: "ma" },
+      { char: "き", sound: "ki" },
+      { char: "さ", sound: "sa" },
+      { char: "し", sound: "shi" },
+      { char: "た", sound: "ta" },
+      { char: "い", sound: "i" },
+      { char: "り", sound: "ri" },
+      { char: "う", sound: "u" },
+      { char: "え", sound: "e" },
+      { char: "か", sound: "ka" }
     ];
 
-    let correct = "";
+    let correct = {};
     let score = 0;
     let audio = new Audio();
 
@@ -100,24 +120,31 @@
       // 正解をランダムに選ぶ
       correct = hiraganaList[Math.floor(Math.random() * hiraganaList.length)];
 
-      // 音声セット（例：sounds/ka.mp3）
-      audio = new Audio("sounds/" + correct + ".m4a");
-      audio.play();
+      // 音声セット（m4a / ローマ字）
+      audio = new Audio("sounds/" + correct.sound + ".m4a");
 
-      // カード生成
-      const shuffled = [...hiraganaList].sort(() => Math.random() - 0.5).slice(0, 4);
-      if (!shuffled.includes(correct)) {
+      // 自動再生（ブロック対策あり）
+      setTimeout(() => {
+        audio.play().catch(() => {});
+      }, 300);
+
+      // 4択を作る
+      const shuffled = [...hiraganaList]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 4);
+
+      if (!shuffled.some(item => item.char === correct.char)) {
         shuffled[Math.floor(Math.random() * shuffled.length)] = correct;
       }
 
       const cardsDiv = document.getElementById("cards");
       cardsDiv.innerHTML = "";
 
-      shuffled.forEach(char => {
+      shuffled.forEach(item => {
         const div = document.createElement("div");
         div.className = "card";
-        div.textContent = char;
-        div.onclick = () => checkAnswer(char);
+        div.textContent = item.char;
+        div.onclick = () => checkAnswer(item);
         cardsDiv.appendChild(div);
       });
     }
@@ -127,8 +154,8 @@
       audio.play();
     }
 
-    function checkAnswer(char) {
-      if (char === correct) {
+    function checkAnswer(selected) {
+      if (selected.char === correct.char) {
         score += 10;
         document.getElementById("score").textContent = "スコア：" + score;
         document.getElementById("message").textContent = "🎉 せいかい！";
@@ -138,7 +165,7 @@
 
         const cards = document.querySelectorAll(".card");
         cards.forEach(card => {
-          if (card.textContent === correct) {
+          if (card.textContent === correct.char) {
             // 光らせる
             card.classList.add("correct-highlight");
 
@@ -146,7 +173,7 @@
             audio.currentTime = 0;
             audio.play();
 
-            // 1秒後に元に戻す
+            // 1秒後に戻す
             setTimeout(() => {
               card.classList.remove("correct-highlight");
             }, 1000);
