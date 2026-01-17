@@ -101,11 +101,11 @@
       correct = hiraganaList[Math.floor(Math.random() * hiraganaList.length)];
 
       // 音声セット（例：sounds/ka.mp3）
-      audio = new Audio("sounds/" + correct + ".mp3");
+      audio = new Audio("sounds/" + correct + ".m4a");
       audio.play();
 
       // カード生成
-      const shuffled = [...hiraganaList].sort(() => Math.random() - 0.5).slice(0, 8);
+      const shuffled = [...hiraganaList].sort(() => Math.random() - 0.5).slice(0, 4);
       if (!shuffled.includes(correct)) {
         shuffled[Math.floor(Math.random() * shuffled.length)] = correct;
       }
