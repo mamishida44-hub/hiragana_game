@@ -9,6 +9,7 @@
     body {
       font-family:
         "UD デジタル 教科書体",
+        "BIZ UD教科書体",
         "Hiragino Kaku Gothic ProN",
         "Noto Sans JP",
         "Yu Gothic",
@@ -39,12 +40,24 @@
     .card {
       background: white;
       border-radius: 12px;
-      font-size: 42px;
       padding: 25px;
       cursor: pointer;
       user-select: none;
       transition: 0.2s;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+    }
+
+    .card span {
+      font-size: 42px;
+    }
+
+    .card img {
+      width: 60px;
+      height: auto;
     }
 
     .card:active {
@@ -85,7 +98,10 @@
   <div id="score">スコア：0</div>
 
   <script>
-    // ひらがな と ローマ字音声の対応
+    // SVGを使う文字（書写用）
+    const svgChars = ["さ", "り", "き"];
+
+    // ひらがなと音声（ローマ字）の対応
     const hiraganaList = [
       { char: "く", sound: "ku" },
       { char: "へ", sound: "he" },
@@ -117,18 +133,13 @@
     function playRound() {
       document.getElementById("message").textContent = "";
 
-      // 正解をランダムに選ぶ
       correct = hiraganaList[Math.floor(Math.random() * hiraganaList.length)];
 
-      // 音声セット（m4a / ローマ字）
       audio = new Audio("sounds/" + correct.sound + ".m4a");
-
-      // 自動再生（ブロック対策あり）
       setTimeout(() => {
         audio.play().catch(() => {});
       }, 300);
 
-      // 4択を作る
       const shuffled = [...hiraganaList]
         .sort(() => Math.random() - 0.5)
         .slice(0, 4);
@@ -143,7 +154,19 @@
       shuffled.forEach(item => {
         const div = document.createElement("div");
         div.className = "card";
-        div.textContent = item.char;
+
+        // SVGか文字かを判定
+        if (svgChars.includes(item.char)) {
+          const img = document.createElement("img");
+          img.src = "images/" + item.sound + ".svg";
+          img.alt = item.char;
+          div.appendChild(img);
+        } else {
+          const span = document.createElement("span");
+          span.textContent = item.char;
+          div.appendChild(span);
+        }
+
         div.onclick = () => checkAnswer(item);
         cardsDiv.appendChild(div);
       });
@@ -165,15 +188,15 @@
 
         const cards = document.querySelectorAll(".card");
         cards.forEach(card => {
-          if (card.textContent === correct.char) {
-            // 光らせる
+          if (
+            (card.textContent && card.textContent === correct.char) ||
+            (card.querySelector("img") &&
+             card.querySelector("img").alt === correct.char)
+          ) {
             card.classList.add("correct-highlight");
-
-            // 正しい音をもう一度鳴らす
             audio.currentTime = 0;
             audio.play();
 
-            // 1秒後に戻す
             setTimeout(() => {
               card.classList.remove("correct-highlight");
             }, 1000);
@@ -186,3 +209,4 @@
   </script>
 </body>
 </html>
+
